@@ -38,7 +38,7 @@ VALUES('John','Doe',DATEVALUE('2014-01-01'),DATEVALUE('2015-01-01'),'InszX',DATE
 
                 cmd.CommandText = @"INSERT INTO [Input Absence rights$]
                 ([First Name], [Last Name], [Employee In Date], [Employee Out Date], [Insz], [Date Of Birth], [Absence Class], [Absence Code], [Nilos Code], [Saldo], [From Date], [To Date]) 
-VALUES('Jane','Smith',DATEVALUE('2014-01-01'),DATEVALUE('2015-01-01'),'InszX',DATEVALUE('1990-01-02'),'TestClass',1234,54321, 10, DATEVALUE('2017-11-01'),DATEVALUE('2017-11-11'));";
+VALUES('Jane','Smith',DATEVALUE('2014-01-01'),DATEVALUE('2015-01-01'),'InszX',DATEVALUE('1990-01-02'),'TestClass',1234,54321, 10, DATEVALUE('2017-08-01'),DATEVALUE('2017-11-11'));";
                 cmd.ExecuteNonQuery();
 
                 conn.Close();
