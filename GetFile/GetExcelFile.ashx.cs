@@ -5,6 +5,7 @@ using System.Web;
 using System.Reflection;
 using System.IO;
 using System.Text;
+using System.Data.OleDb;
 
 namespace GetFile
 {
@@ -17,13 +18,31 @@ namespace GetFile
 
         public void ProcessRequest(HttpContext context)
         {
-            context.Response.ContentType = "application/vnd.ms-excel";
-            context.Response.Headers.Add("Content-Disposition", $"attachment; filename = test-{DateTime.Now.ToString("yyyyMMddHHmmss")}.xlsx;");
+            string tempFileName = null;
+            try
+            {
+                context.Response.ContentType = "application/vnd.ms-excel";
+                context.Response.Headers.Add("Content-Disposition", $"attachment; filename = test-{DateTime.Now.ToString("yyyyMMddHHmmss")}.xlsx;");
 
-            string tempFileName = saveTemplateAsTemp();
-            byte[] content = File.ReadAllBytes(tempFileName);
+                tempFileName = saveTemplateAsTemp();
+                writeExcelFile(tempFileName);
+                byte[] content = File.ReadAllBytes(tempFileName);
 
-            context.Response.BinaryWrite(content);
+                context.Response.BinaryWrite(content);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+                if(!string.IsNullOrEmpty(tempFileName) && File.Exists(tempFileName))
+                {
+                    File.Delete(tempFileName);
+                }
+            }
+
         }
 
         public bool IsReusable
@@ -53,7 +72,31 @@ namespace GetFile
             return ret;
         }
 
-        private string getConnectionString(string fpath)
+        private static void writeExcelFile(string fpath)
+        {
+            string connectionString = getConnectionString(fpath);
+
+            using (OleDbConnection conn = new OleDbConnection(connectionString))
+            {
+                conn.Open();
+                OleDbCommand cmd = new OleDbCommand();
+                cmd.Connection = conn;
+
+                cmd.CommandText = @"INSERT INTO [Input Absence rights$]
+                ([First Name], [Last Name], [Employee In Date], [Employee Out Date], [Insz], [Date Of Birth], [Absence Class], [Absence Code], [Nilos Code], [Saldo], [From Date], [To Date]) 
+VALUES('John','Doe',DATEVALUE('2014-01-01'),DATEVALUE('2015-01-01'),'InszX',DATEVALUE('1990-01-02'),'TestClass',1234,54321, 10, DATEVALUE('2017-11-01'),DATEVALUE('2017-11-11'));";
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = @"INSERT INTO [Input Absence rights$]
+                ([First Name], [Last Name], [Employee In Date], [Employee Out Date], [Insz], [Date Of Birth], [Absence Class], [Absence Code], [Nilos Code], [Saldo], [From Date], [To Date]) 
+VALUES('Jane','Smith',DATEVALUE('2014-01-01'),DATEVALUE('2015-01-01'),'InszX',DATEVALUE('1990-01-02'),'TestClass',1234,54321, 10, DATEVALUE('2017-08-01'),DATEVALUE('2017-11-11'));";
+                cmd.ExecuteNonQuery();
+
+                conn.Close();
+            }
+        }
+
+        private static string getConnectionString(string fpath)
         {
             Dictionary<string, string> props = new Dictionary<string, string>();
 
